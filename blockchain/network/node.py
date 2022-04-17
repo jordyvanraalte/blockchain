@@ -1,12 +1,12 @@
 import socket
 import threading
 import uuid
-from struct import unpack, pack
 import time
 import json
+from struct import unpack, pack
 
 MAX_INBOUND_CONNECTIONS = 125
-MAX_OUTBOUND_CONNECTIONS = 4
+MAX_OUTBOUND_CONNECTIONS = 10
 
 
 # https://github.com/macsnoeren/python-p2p-network
@@ -47,7 +47,6 @@ class PeerConnection(threading.Thread):
     def parse_packet(packet):
         try:
             packet_decoded = packet.decode('utf-8')
-
             try:
                 return json.loads(packet_decoded)
 
@@ -72,9 +71,12 @@ class PeerConnection(threading.Thread):
                 packet = PeerConnection.parse_packet(buffer)
                 self.main_node.node_message(self, packet)
             except socket.timeout:
-                print("Peerconnection timeout")
+                # todo add debug option for timeout.
+                # print("Socket timeout, waiting for new packets again.")
+                pass
             except Exception as e:
                 print(e)
+                raise e
                 self.terminate_flag.set()
 
         self.main_node.node_disconnected(self)
@@ -164,6 +166,7 @@ class Node(threading.Thread):
 
             self.outbound_peers.append(peer_connection)
             self.outbound_peer_connected(peer_connection)
+            return True
         except Exception as e:
             print(e)
             return False
@@ -197,14 +200,15 @@ class Node(threading.Thread):
                     connected_node_id = conn.recv(4096).decode('utf-8')
                     (connected_node_id, connected_node_port) = connected_node_id.split(':')
                     conn.send(str(self.id).encode('utf-8'))
-                    peer_connection = self.create_peer_connection(connected_node_id, address, port, conn)
+                    peer_connection = self.create_peer_connection(connected_node_id, address, connected_node_port, conn)
                     peer_connection.start()
                     self.inbound_node_connected(peer_connection)
                     self.inbound_peers.append(peer_connection)
                 else:
                     conn.close()
             except socket.timeout:
-                print(f"Connection is closed")
+                # print(f"Socket timeout from node")
+                pass
             except Exception as e:
                 raise e
 
