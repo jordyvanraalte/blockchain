@@ -68,10 +68,6 @@ The project has been build with the following packages.
    ```sh
    pip install -U -r requirements.txt
    ```
-2. Run the application:
-    ```sh
-   python ./blockchain/app.py
-   ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -79,13 +75,16 @@ The project has been build with the following packages.
 
 <!-- USAGE EXAMPLES -->
 ## Usage
+Run the application:
+    ```
+        python ./blockchain/app.py 
+    ```
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+Different arguments can be passed to the script:
 
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
+- --addr (-a): address of the node. The default is 0.0.0.0
+- --port (-p): port of the node. The default port is 50000
+- --debug (-d): actives debug print if enabled. Default is false.
 
 <!-- LICENSE -->
 ## License
