@@ -10,6 +10,5 @@ COPY ./blockchain /app/blockchain
 
 EXPOSE 50000
 
-ENTRYPOINT ["python", "-m"]
-CMD ["blockchain"]
-
+ENTRYPOINT ["python", "-m", "blockchain"]
+CMD ["--a 0.0.0.0","--port 50000", "--debug False"]
