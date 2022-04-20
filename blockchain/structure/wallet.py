@@ -1,4 +1,4 @@
-from blockchain.utils import crypto
+from blockchain.structure.blockchain import crypto
 
 
 class Wallet:

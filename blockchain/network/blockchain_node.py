@@ -6,7 +6,6 @@ from blockchain.structure.transaction import Transaction
 from blockchain.network.node import Node
 from blockchain.network import protocol
 
-
 class BlockchainNode(Node):
     def __init__(self, addr, port, debug=False):
         super().__init__(addr, port, debug=debug)
