@@ -3,6 +3,7 @@ import datetime
 
 DIFFICULTY = 5
 
+
 # todo change chain to a SQLITE database.
 class Blockchain:
     def __init__(self):
