@@ -6,6 +6,7 @@ from blockchain.structure.transaction import Transaction
 from blockchain.network.node import Node
 from blockchain.network import protocol
 
+
 class BlockchainNode(Node):
     def __init__(self, addr, port, debug=False):
         super().__init__(addr, port, debug=debug)
@@ -20,6 +21,10 @@ class BlockchainNode(Node):
 
     def resolve_conflicts_broadcast(self):
         self.broadcast(protocol.chain_request())
+
+    def add_transaction(self, transaction):
+        self.blockchain.new_transaction(transaction)
+        self.broadcast(protocol.new_transaction(jsons.dumps(transaction)))
 
     # todo whole chain gets sends but seems unreasonable, figure out how the chain gets send in the network
     # todo solve double chain problem by adding missing transactions back to the transaction pool
@@ -38,9 +43,9 @@ class BlockchainNode(Node):
             elif data['type'] == protocol.CHAIN_RESPONSE:
                 self.on_chain_received(node, data['blockchain'])
             elif data['type'] == protocol.NEW_TRANSACTION:
-                self.on_transaction_received(data)
+                self.on_transaction_received(data['transaction'])
             elif data['type'] == protocol.NEW_BLOCK:
-                self.on_block_received(data)
+                self.on_block_received(data['block'])
             elif data['type'] == protocol.PING:
                 self.on_ping_receive(node)
         except Exception as e:
