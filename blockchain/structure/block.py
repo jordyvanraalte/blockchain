@@ -3,17 +3,17 @@ from cryptography.hazmat.primitives import hashes
 
 
 class Block:
-    # todo add notes to blocks
-    def __init__(self, index, time_stamp, transactions, previous_block, previous_hash, proof):
+    def __init__(self, index, time_stamp, transactions, previous_block, previous_hash, proof, notes):
         self.index = index
         self.time_stamp = time_stamp
         self.transactions = transactions
         self.previous_hash = previous_hash
         self.previous_block = previous_block
         self.proof = proof
+        self.notes = notes
 
     def __repr__(self):
-        return f"index : {self.index}, time_stamp: {self.time_stamp}, transactions: {self.transactions}, previous_hash: {self.previous_hash}, proof: {self.proof}"
+        return f"index : {self.index}, time_stamp: {self.time_stamp}, transactions: {self.transactions}, previous_hash: {self.previous_hash}, proof: {self.proof}, notes: {self.notes}"
 
     def calculate_hash(self):
         digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
@@ -31,4 +31,4 @@ class Block:
         for transaction in self.transactions:
             if not transaction.is_valid():
                 return False
-        return self.previous_block.self.calculate_hash() == self.calculate_hash()
+        return self.previous_block.calculate_hash() == self.previous_hash
