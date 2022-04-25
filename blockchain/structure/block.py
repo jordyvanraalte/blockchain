@@ -31,4 +31,5 @@ class Block:
         for transaction in self.transactions:
             if not transaction.is_valid():
                 return False
+
         return self.previous_block.calculate_hash() == self.previous_hash
