@@ -1,5 +1,6 @@
-from blockchain.utils import crypto
 import uuid
+
+from blockchain.utils import crypto
 
 
 class Transaction:
@@ -52,7 +53,7 @@ class Transaction:
 
             # validating if a signature exist with the corresponding input address.
             for signature in self.signatures:
-                if crypto.verify(data, signature, sender):
+                if crypto.verify(data, signature, crypto.decode_addr(sender)):
                     found = True
 
             if not found:
@@ -67,7 +68,7 @@ class Transaction:
         for addr in self.multi_signing_addresses:
             found = False
             for signature in self.signatures:
-                if crypto.verify(data, signature, addr):
+                if crypto.verify(data, signature, crypto.decode_addr(addr)):
                     found = True
 
             if not found:
