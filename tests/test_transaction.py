@@ -1,5 +1,5 @@
 import unittest
-from blockchain.structure.transaction import Transaction
+from blockchain.structure.transaction import Transaction, CoinbaseTransaction
 from blockchain.structure.wallet import Wallet
 
 
@@ -118,3 +118,12 @@ class TestTransaction(unittest.TestCase):
         transaction.outputs[0] = (wallet3.address, 1)
 
         self.assertFalse(transaction.is_valid())
+
+    def test_coinbase_transaction(self):
+        wallet1 = Wallet()
+        wallet1.create_keys()
+
+        transaction = CoinbaseTransaction()
+        transaction.add_output(wallet1.address, 4.04)
+
+        self.assertTrue(transaction.is_valid())

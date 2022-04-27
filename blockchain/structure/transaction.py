@@ -42,7 +42,8 @@ class Transaction:
         if self.total_input_amount() < self.total_output_amount():
             return False
 
-        return self.__validate_inputs(data) and self.__validate_outputs() and self.__validate_multi_signing_addresses(data)
+        return self.__validate_inputs(data) and self.__validate_outputs() and self.__validate_multi_signing_addresses(
+            data)
 
     def __validate_inputs(self, data):
         for sender, amount in self.inputs:
@@ -74,4 +75,10 @@ class Transaction:
             if not found:
                 return False
 
+        return True
+
+
+class CoinbaseTransaction(Transaction):
+    # coinbase transaction is always valid
+    def is_valid(self):
         return True

@@ -8,9 +8,9 @@ from blockchain.network import protocol
 
 
 class BlockchainNode(Node):
-    def __init__(self, addr, port, debug=False):
+    def __init__(self, addr, port, debug=False, difficulty=2):
         super().__init__(addr, port, debug=debug)
-        self.blockchain = Blockchain()
+        self.blockchain = Blockchain(difficulty)
         self.scheduler = BackgroundScheduler()
         self.scheduler.add_job(self.ping, 'interval', seconds=30)
         self.scheduler.start()
@@ -64,13 +64,16 @@ class BlockchainNode(Node):
     # todo if block is received and not registered, broadcast it to other peers.
     def on_block_received(self, block):
         block = jsons.loads(block, Block)
-        self.blockchain.new_block(block)
+        is_new_block_and_valid = self.blockchain.new_block(block)
+        if is_new_block_and_valid:
+            self.broadcast(protocol.new_block(jsons.dumps(block)))
 
     # todo if transaction is received and not registered, broadcast it to other peers.
     def on_transaction_received(self, transaction):
         transaction = jsons.loads(transaction, Transaction)
-        self.blockchain.new_transaction(transaction)
-        # self.broadcast(protocol.new_transaction(transaction))
+        is_new_transaction = self.blockchain.new_transaction(transaction)
+        if is_new_transaction:
+            self.broadcast(protocol.new_transaction(transaction))
 
 
 if __name__ == '__main__':
