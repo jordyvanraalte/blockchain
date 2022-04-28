@@ -5,14 +5,14 @@ from blockchain.utils import crypto
 
 class Transaction:
     def __init__(self):
-        self.id = uuid.uuid4()
+        self.id = str(uuid.uuid4())
         self.inputs = []
         self.outputs = []
         self.signatures = []
         self.multi_signing_addresses = []
 
     def __repr__(self):
-        return f"id: {self.id},  inputs: {self.inputs}, outputs: {self.outputs}, signatures: {self.signatures}, multi_signatures: {self.multi_signing_addresses}"
+        return f"id: {self.id}"
 
     def add_input(self, sender, amount):
         self.inputs.append((sender, amount))

@@ -23,8 +23,9 @@ class BlockchainNode(Node):
         self.broadcast(protocol.chain_request())
 
     def add_transaction(self, transaction):
-        self.blockchain.new_transaction(transaction)
-        self.broadcast(protocol.new_transaction(jsons.dumps(transaction)))
+        is_new_transaction = self.blockchain.new_transaction(transaction)
+        if is_new_transaction:
+            self.broadcast(protocol.new_transaction(transaction))
 
     # todo whole chain gets sends but seems unreasonable, figure out how the chain gets send in the network
     # todo solve double chain problem by adding missing transactions back to the transaction pool
@@ -37,22 +38,19 @@ class BlockchainNode(Node):
 
     def node_message(self, node, data):
         self.debug_print("node_message: " + node.id + ": " + str(data))
-        try:
-            if data['type'] == protocol.CHAIN_REQUEST:
-                self.on_chain_request(node)
-            elif data['type'] == protocol.CHAIN_RESPONSE:
-                self.on_chain_received(node, data['blockchain'])
-            elif data['type'] == protocol.NEW_TRANSACTION:
-                self.on_transaction_received(data['transaction'])
-            elif data['type'] == protocol.NEW_BLOCK:
-                self.on_block_received(data['block'])
-            elif data['type'] == protocol.PING:
-                self.on_ping_receive(node)
-        except Exception as e:
-            print(e)
+        if data['type'] == protocol.CHAIN_REQUEST:
+            self.on_chain_request(node)
+        elif data['type'] == protocol.CHAIN_RESPONSE:
+            self.on_chain_received(node, data['blockchain'])
+        elif data['type'] == protocol.NEW_TRANSACTION:
+            self.on_transaction_received(data['transaction'])
+        elif data['type'] == protocol.NEW_BLOCK:
+            self.on_block_received(data['block'])
+        elif data['type'] == protocol.PING:
+            self.on_ping_receive(node)
 
     def on_chain_request(self, node):
-        self.send(node, protocol.chain_response(jsons.dumps(self.blockchain)))
+        self.send(node, protocol.chain_response(self.blockchain))
 
     def on_ping_receive(self, node):
         self.send(node, protocol.pong())
@@ -61,19 +59,15 @@ class BlockchainNode(Node):
         blockchain = jsons.loads(blockchain, Blockchain)
         self.resolve_conflicts(node, blockchain)
 
-    # todo if block is received and not registered, broadcast it to other peers.
     def on_block_received(self, block):
         block = jsons.loads(block, Block)
         is_new_block_and_valid = self.blockchain.new_block(block)
         if is_new_block_and_valid:
-            self.broadcast(protocol.new_block(jsons.dumps(block)))
+            self.broadcast(protocol.new_block(block))
 
-    # todo if transaction is received and not registered, broadcast it to other peers.
     def on_transaction_received(self, transaction):
-        transaction = jsons.loads(transaction, Transaction)
-        is_new_transaction = self.blockchain.new_transaction(transaction)
-        if is_new_transaction:
-            self.broadcast(protocol.new_transaction(transaction))
+        transaction = jsons.loads(jsons.dumps(transaction), Transaction)
+        self.add_transaction(transaction)
 
 
 if __name__ == '__main__':

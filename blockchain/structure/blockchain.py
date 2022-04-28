@@ -21,10 +21,16 @@ class Blockchain:
         self.last_block = self.create_block(None, None, 1, [genesis_transaction], "I'm the Genesis block")
 
     def new_block(self, block):
-        if block.is_valid() and self.is_hash_of_block_valid(block) and block not in self.chain:
+        if block.is_valid() and self.is_hash_of_block_valid(block) and not any([b.id == block.id for b in self.chain]):
             self.chain.append(block)
             self.last_block = block
             self.__remove_block_transactions_from_pool(block)
+            return True
+        return False
+
+    def new_transaction(self, transaction):
+        if not any([t.id == transaction.id for t in self.transaction_pool]):
+            self.transaction_pool.append(transaction)
             return True
         return False
 
@@ -78,12 +84,6 @@ class Blockchain:
             return block
 
         return None
-
-    def new_transaction(self, transaction):
-        if transaction not in self.transaction_pool:
-            self.transaction_pool.append(transaction)
-            return True
-        return False
 
     def is_valid_chain(self):
         for block in self.chain:

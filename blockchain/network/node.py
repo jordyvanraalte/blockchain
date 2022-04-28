@@ -61,15 +61,16 @@ class PeerConnection(threading.Thread):
             try:
                 # get length of upcoming package
                 bs = self.sock.recv(8)
-                (length,) = unpack('>Q', bs)
-                buffer = b''
-                # while the length of the buffer is smaller than the length of the package
-                while len(buffer) < length:
-                    to_read = length - len(buffer)
-                    buffer += self.sock.recv(4096 if to_read > 4096 else to_read)
+                if len(bs) > 0:
+                    (length,) = unpack('>Q', bs)
+                    buffer = b''
+                    # while the length of the buffer is smaller than the length of the package
+                    while len(buffer) < length:
+                        to_read = length - len(buffer)
+                        buffer += self.sock.recv(4096 if to_read > 4096 else to_read)
 
-                packet = PeerConnection.parse_packet(buffer)
-                self.main_node.node_message(self, packet)
+                    packet = PeerConnection.parse_packet(buffer)
+                    self.main_node.node_message(self, packet)
             except socket.timeout:
                 # todo add debug option for timeout.
                 # print("Socket timeout, waiting for new packets again.")
@@ -92,7 +93,7 @@ class Node(threading.Thread):
     def __init__(self, addr, port, callback=None, debug=False):
         super(Node, self).__init__()
 
-        self.id = uuid.uuid4()
+        self.id = str(uuid.uuid4())
         # server address
         self.addr = addr
         # server port
