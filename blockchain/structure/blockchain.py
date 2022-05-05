@@ -87,6 +87,13 @@ class Blockchain:
                     return block
                 else:
                     block.proof += 1
+
+            if not self.mining:
+                # return all the transactions to the pool if mining is ended and remove new block
+                self.transaction_pool.append(block.transactions)
+                del self.chain[-1]
+                self.last_block = self.chain[-1]
+
         else:
             return block
 

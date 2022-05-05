@@ -131,8 +131,7 @@ class TestBlockchain(unittest.TestCase):
         transaction.add_output(wallet2.address, 1)
         transaction.sign(wallet1.private_key)
 
-        block = Block(1, datetime.datetime.now(), [transaction], blockchain.last_block,
-                      blockchain.last_block.calculate_hash(), 1, '')
+        block = Block(1, datetime.datetime.now(), [transaction], blockchain.last_block, blockchain.last_block.calculate_hash(), 1, '')
 
         self.assertFalse(blockchain.new_block(block))
 
