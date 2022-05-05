@@ -7,13 +7,16 @@ from blockchain.network.node import Node
 from blockchain.network import protocol
 
 
+# todo seems jsons isn't working great, change to other structure
+# todo block class contains previous block which can result in large structures send through to the connection. Change the block class
 class BlockchainNode(Node):
-    def __init__(self, addr, port, debug=False, difficulty=2):
+    def __init__(self, addr, port, wallet, debug=False, difficulty=2):
         super().__init__(addr, port, debug=debug)
         self.blockchain = Blockchain(difficulty)
         self.scheduler = BackgroundScheduler()
         self.scheduler.add_job(self.ping, 'interval', seconds=30)
         self.scheduler.start()
+        self.wallet = wallet
 
     def ping(self):
         self.broadcast(protocol.ping())
@@ -25,7 +28,12 @@ class BlockchainNode(Node):
     def add_transaction(self, transaction):
         is_new_transaction = self.blockchain.new_transaction(transaction)
         if is_new_transaction:
-            self.broadcast(protocol.new_transaction(transaction))
+            self.broadcast(protocol.new_transaction(Transaction.encode(transaction)))
+
+    def mine(self):
+        block = self.blockchain.mine(self.wallet.address)
+        if block is not None:
+            self.broadcast(protocol.new_block(Block.encode(block)))
 
     # todo whole chain gets sends but seems unreasonable, figure out how the chain gets send in the network
     # todo solve double chain problem by adding missing transactions back to the transaction pool
@@ -56,18 +64,18 @@ class BlockchainNode(Node):
         self.send(node, protocol.pong())
 
     def on_chain_received(self, node, blockchain):
-        blockchain = jsons.loads(blockchain, Blockchain)
+        blockchain = jsons.loads(jsons.dumps(blockchain), Blockchain)
         self.resolve_conflicts(node, blockchain)
 
     def on_block_received(self, block):
-        block = jsons.loads(block, Block)
-        is_new_block_and_valid = self.blockchain.new_block(block)
+        block = jsons.loads(jsons.dumps(block), Block)
+        is_new_block_and_valid = self.blockchain.new_block(Block.decode(block))
         if is_new_block_and_valid:
             self.broadcast(protocol.new_block(block))
 
     def on_transaction_received(self, transaction):
         transaction = jsons.loads(jsons.dumps(transaction), Transaction)
-        self.add_transaction(transaction)
+        self.add_transaction(Transaction.decode(transaction))
 
 
 if __name__ == '__main__':

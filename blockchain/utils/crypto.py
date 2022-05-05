@@ -104,3 +104,13 @@ def decode_addr(addr):
     pem = base64.b64decode(base_64_bytes)
     public_key = serialization.load_pem_public_key(pem)
     return public_key
+
+
+def base64_encode_bytes(bytes):
+    base64_value = base64.b64encode(bytes).decode('utf-8')
+    return base64_value
+
+
+def base64_decode_bytes(string):
+    bytes_value = base64.b64decode(string.encode('utf-8'))
+    return bytes_value

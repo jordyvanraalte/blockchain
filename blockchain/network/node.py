@@ -162,6 +162,7 @@ class Node(threading.Thread):
                 sock.close()
                 return True
 
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             peer_connection = self.create_peer_connection(connected_node_id, addr, port, sock)
             peer_connection.start()
 
@@ -170,6 +171,7 @@ class Node(threading.Thread):
             return True
         except Exception as e:
             print(e)
+            raise e
             return False
 
     def send(self, node, data):

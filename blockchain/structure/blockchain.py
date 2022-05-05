@@ -1,4 +1,5 @@
 import datetime
+
 from blockchain.structure.block import Block
 from blockchain.structure.transaction import Transaction, CoinbaseTransaction
 
@@ -14,11 +15,15 @@ class Blockchain:
         self.transaction_pool = []
         self.difficulty = difficulty
         self.mining = False
+        self.last_block = None
 
         # creating genesis transaction
         genesis_transaction = Transaction()
         genesis_transaction.add_output(PUBLIC_ADDRESS_GENESIS_BLOCK, 1000)
-        self.last_block = self.create_block(None, None, 1, [genesis_transaction], "I'm the Genesis block")
+        self.create_block(None, None, 1, [genesis_transaction], "I'm the Genesis block")
+
+    def __repr__(self):
+        return f"chain: {self.chain}, pool: {self.transaction_pool}, last_block {self.last_block}"
 
     def new_block(self, block):
         if block.is_valid() and self.is_hash_of_block_valid(block) and not any([b.id == block.id for b in self.chain]):
@@ -39,10 +44,11 @@ class Blockchain:
             if transaction in self.transaction_pool:
                 self.transaction_pool.remove(transaction)
 
+    #todo add timezone to datetime
     def create_block(self, previous_block, previous_hash, proof, verified_transactions, notes):
         block = Block(
             len(self.chain),
-            datetime.datetime.now(),
+            datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
             verified_transactions,
             previous_block,
             previous_hash,
@@ -72,6 +78,7 @@ class Blockchain:
         block = None
         self.mining = True
         # verified_transactions should at least contain coinbase transaction and 1 transaction
+        # todo fix hashing decode to utf-8
         if len(verified_transactions) >= 2:
             block = self.create_block(self.last_block, self.last_block.calculate_hash(), 1, verified_transactions, '')
             while self.mining:

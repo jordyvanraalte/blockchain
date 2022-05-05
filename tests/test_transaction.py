@@ -127,3 +127,20 @@ class TestTransaction(unittest.TestCase):
         transaction.add_output(wallet1.address, 4.04)
 
         self.assertTrue(transaction.is_valid())
+
+    def test_encoding_decoding(self):
+        wallet1 = Wallet()
+        wallet1.create_keys()
+        wallet2 = Wallet()
+        wallet2.create_keys()
+
+        transaction = Transaction()
+        transaction.add_input(wallet1.address, 1)
+        transaction.add_output(wallet2.address, 1)
+        transaction.sign(wallet1.private_key)
+
+        t_encoded = Transaction.encode(transaction)
+        t_decoded = Transaction.decode(t_encoded)
+
+        self.assertEqual(t_decoded, transaction)
+        self.assertNotEqual(t_encoded, transaction)

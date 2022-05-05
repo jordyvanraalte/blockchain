@@ -1,4 +1,6 @@
 import uuid
+import copy
+import jsons
 
 from blockchain.utils import crypto
 
@@ -12,7 +14,10 @@ class Transaction:
         self.multi_signing_addresses = []
 
     def __repr__(self):
-        return f"id: {self.id}"
+        return f"id: {self.id}, inputs: {self.inputs}, outputs: {self.outputs}, signatures: {self.signatures}. multi_signing_addresses: {self.multi_signing_addresses}"
+
+    def __eq__(self, other):
+        return self.id == other.id and self.inputs == other.inputs and self.outputs == other.outputs and self.signatures == other.signatures and self.multi_signing_addresses == other.multi_signing_addresses
 
     def add_input(self, sender, amount):
         self.inputs.append((sender, amount))
@@ -24,7 +29,8 @@ class Transaction:
         self.multi_signing_addresses.append(addr)
 
     def sign(self, private_key):
-        self.signatures.append(crypto.sign(self.gather_signing_data(), private_key))
+        signature_bytes = crypto.sign(self.gather_signing_data(), private_key)
+        self.signatures.append(signature_bytes)
 
     def total_input_amount(self):
         return sum(amount for sender, amount in self.inputs)
@@ -76,6 +82,36 @@ class Transaction:
                 return False
 
         return True
+
+    @staticmethod
+    def encode(t):
+        def to_dict(transaction):
+            return {"address": transaction[0], 'amount': transaction[1]}
+
+        t = copy.copy(t)
+        t.inputs = list(map(lambda i: to_dict(i), t.inputs))
+        t.outputs = list(map(lambda o: to_dict(o), t.outputs))
+        t.signatures = list(map(lambda s: crypto.base64_encode_bytes(s), t.signatures))
+        # returns a copy since memory id will be the same, todo change later
+        return t
+
+    @staticmethod
+    def decode(t):
+        def to_tuple(transaction):
+            return transaction['address'], transaction['amount']
+
+        if type(t) is dict:
+            if len(t['inputs']) == 0:
+                t = jsons.loads(jsons.dumps(t), CoinbaseTransaction)
+            else:
+                t = jsons.loads(jsons.dumps(t), Transaction)
+
+        t = copy.copy(t)
+        t.inputs = list(map(lambda i: to_tuple(i), t.inputs))
+        t.outputs = list(map(lambda o: to_tuple(o), t.outputs))
+        t.signatures = list(map(lambda s: crypto.base64_decode_bytes(s), t.signatures))
+        # returns a copy since memory id will be the same, todo change later
+        return t
 
 
 class CoinbaseTransaction(Transaction):

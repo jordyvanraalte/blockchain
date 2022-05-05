@@ -4,6 +4,7 @@ from blockchain.structure.blockchain import Blockchain
 from blockchain.structure.transaction import Transaction
 from blockchain.structure.block import Block
 from blockchain.structure.wallet import Wallet
+from blockchain.utils import crypto
 
 
 class TestBlockchain(unittest.TestCase):
@@ -194,3 +195,39 @@ class TestBlockchain(unittest.TestCase):
 
         block = blockchain.mine(wallet3.address)
         self.assertFalse(blockchain.new_block(block))
+
+
+    def test_hashes(self):
+        blockchain = Blockchain(2)
+
+        wallet1 = Wallet()
+        wallet1.create_keys()
+        wallet2 = Wallet()
+        wallet2.create_keys()
+        wallet3 = Wallet()
+        wallet3.create_keys()
+
+        transaction1 = Transaction()
+        transaction1.add_input(wallet1.address, 1)
+        transaction1.add_output(wallet2.address, 1)
+        transaction1.sign(wallet1.private_key)
+
+        transaction2 = Transaction()
+        transaction2.add_input(wallet1.address, 1)
+        transaction2.add_output(wallet2.address, 1)
+        transaction2.sign(wallet1.private_key)
+
+        transaction3 = Transaction()
+        transaction3.add_input(wallet1.address, 1)
+        transaction3.add_output(wallet2.address, 1)
+        transaction3.sign(wallet1.private_key)
+
+        blockchain.new_transaction(transaction1)
+        blockchain.mine(wallet3.address)
+
+        blockchain.new_transaction(transaction2)
+        blockchain.mine(wallet3.address)
+
+        print(blockchain)
+
+        self.assertTrue(crypto.base64_decode_bytes(blockchain.chain[-1].previous_hash) == blockchain.chain[-2].calculate_hash())
