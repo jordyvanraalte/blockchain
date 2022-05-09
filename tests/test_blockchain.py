@@ -227,6 +227,4 @@ class TestBlockchain(unittest.TestCase):
         blockchain.new_transaction(transaction2)
         blockchain.mine(wallet3.address)
 
-        print(blockchain)
-
-        self.assertTrue(crypto.base64_decode_bytes(blockchain.chain[-1].previous_hash) == blockchain.chain[-2].calculate_hash())
+        self.assertTrue(blockchain.chain[-1].previous_hash == blockchain.chain[-2].calculate_hash())

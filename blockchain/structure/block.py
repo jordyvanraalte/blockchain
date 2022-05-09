@@ -66,7 +66,7 @@ class Block:
     @staticmethod
     def decode(b):
             b = copy.copy(b)
-            b.transactions = list(map(lambda i: Transaction.decode(i), b.transactions))
+            b.transactions = list(map(lambda t: Transaction.decode(t), b.transactions))
             if b.previous_hash is not None:
                 b.previous_hash = crypto.base64_decode_bytes(b.previous_hash)
                 previous_block = jsons.loads(jsons.dumps(b.previous_block), Block)

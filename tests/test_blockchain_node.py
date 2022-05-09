@@ -37,6 +37,7 @@ class TestBlockchainNode(unittest.TestCase):
         transaction.sign(wallet1.private_key)
 
         node1.add_transaction(transaction)
+
         time.sleep(1)
 
         node1.stop()
@@ -44,6 +45,8 @@ class TestBlockchainNode(unittest.TestCase):
         node3.stop()
         node4.stop()
         node5.stop()
+
+        time.sleep(1)
 
         node1.join()
         node2.join()
@@ -97,6 +100,8 @@ class TestBlockchainNode(unittest.TestCase):
         node4.stop()
         node5.stop()
 
+        time.sleep(1)
+
         node1.join()
         node2.join()
         node3.join()
@@ -107,3 +112,58 @@ class TestBlockchainNode(unittest.TestCase):
         self.assertTrue(len(node2.blockchain.chain) == 2)
         self.assertTrue(len(node4.blockchain.chain) == 2)
         self.assertTrue(len(node5.blockchain.chain) == 1)
+
+
+    def test_resolve_conflicts(self):
+        node_wallet = Wallet()
+        node_wallet.create_keys()
+
+        node1 = BlockchainNode('0.0.0.0', 50001, node_wallet)
+        node2 = BlockchainNode('0.0.0.0', 50002, node_wallet)
+
+        node1.start()
+        node2.start()
+
+        node1.connect('0.0.0.0', 50002)
+
+        wallet1 = Wallet()
+        wallet1.create_keys()
+        wallet2 = Wallet()
+        wallet2.create_keys()
+
+        transaction1 = Transaction()
+        transaction1.add_input(wallet1.address, 1)
+        transaction1.add_output(wallet2.address, 1)
+        transaction1.sign(wallet1.private_key)
+
+        node1.add_transaction(transaction1)
+        node1.mine()
+
+        time.sleep(1)
+
+        transaction2 = Transaction()
+        transaction2.add_input(wallet1.address, 1)
+        transaction2.add_output(wallet2.address, 1)
+        transaction2.sign(wallet1.private_key)
+
+        node1.add_transaction(transaction2)
+
+        node3 = BlockchainNode('0.0.0.0', 50003, node_wallet)
+        node4 = BlockchainNode('0.0.0.0', 50004, node_wallet)
+
+        node3.connect('0.0.0.0', 50001)
+        node3.resolve_conflicts_broadcast()
+
+        time.sleep(2)
+
+        node1.stop()
+        node2.stop()
+
+        time.sleep(1)
+
+        node1.join()
+        node2.join()
+
+        self.assertTrue(len(node1.blockchain.chain) == 2)
+        self.assertTrue(len(node3.blockchain.chain) == 2)
+        self.assertTrue(len(node4.blockchain.chain) == 1)

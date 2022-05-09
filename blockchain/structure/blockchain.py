@@ -1,7 +1,10 @@
 import datetime
 
+import jsons
+
 from blockchain.structure.block import Block
 from blockchain.structure.transaction import Transaction, CoinbaseTransaction
+import copy
 
 PUBLIC_ADDRESS_GENESIS_BLOCK = "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF5bXYzdFlaVDZPUVlxM2lUaTJMSgpEbzgxMVVaNzQyV2NjOTQ4Q21IcHlHa0NKTi9iVld0YWo2TUtuNzZCdERFTm5HSW4vUjYwWWtlNERaekwzTUJDCjU4T0lvWC9GL2ZEaUZqSzk0WHZjdFlac0o3OGhONi8yMGVabGF4Yk81S1RhbnhpOHVINGN6OHBLajc1TnlXOUcKOEVPZUk2WnRuTVR5b1lyUkFCZTZ0R21qWElnQUZKaG1SbE54bnpIVWVGRXlxaDhHZko3aUdhQ0lyQmRKUGZVaQpLc2Zoakg1ZVlNUnZTbjNrN2F4UWlwb2lIYTN3bHU3Qk0rWTZwWjZES1pNVWpsRC8vamJ2Z2krQTlBNDZmKzNECnBWQjI4eStjWU93TXZHdjMydy9BOEJXdzNrZU5mSlQzU0ViSEVQL3BFUk5BUFJsVUVOOHQzbDBVRHV5Q21NRDYKWFFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg=="
 
@@ -44,7 +47,7 @@ class Blockchain:
             if transaction in self.transaction_pool:
                 self.transaction_pool.remove(transaction)
 
-    #todo add timezone to datetime
+    # todo add timezone to datetime
     def create_block(self, previous_block, previous_hash, proof, verified_transactions, notes):
         block = Block(
             len(self.chain),
@@ -101,6 +104,9 @@ class Blockchain:
 
     def is_valid_chain(self):
         for block in self.chain:
+            if isinstance(block, dict):
+                block = jsons.loads(jsons.dumps(block), Block)
+
             if not block.is_valid():
                 return False
 
@@ -113,3 +119,17 @@ class Blockchain:
     def is_hash_of_block_valid(self, block):
         return block.calculate_hash()[:self.difficulty] == bytes(''.join('\x00' for i in range(self.difficulty)),
                                                                  'utf-8')
+
+    def encode(self):
+        b = copy.copy(self)
+        b.transaction_pool = list(map(lambda t: Transaction.encode(t), b.transaction_pool))
+        b.chain = list(map(lambda b: Block.encode(b), b.chain))
+        b.last_block = Block.encode(b.last_block)
+        return b
+
+    def decode(self):
+        b = copy.copy(self)
+        b.transaction_pool = list(map(lambda t: Transaction.decode(t), b.transaction_pool))
+        b.chain = list(map(lambda b: Block.decode(jsons.loads(jsons.dumps(b), Block)), b.chain))
+        b.last_block = Block.decode((jsons.loads(jsons.dumps(b.last_block), Block)))
+        return b
