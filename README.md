@@ -100,7 +100,7 @@ Distributed under the GNU GENERAL PUBLIC License. See `LICENSE` for more informa
 
 Jordy van Raalte - ik@jordyvanraalte.nl
 
-Project Link: [https://github.com/github_username/jordyvanraalte/blockchain](https://github.com/jordyvanraalte/blockchain)
+Project Link: [https://github.com/jordyvanraalte/blockchain](https://github.com/jordyvanraalte/blockchain)
 
 Linkedin: [Jordy van Raalte](https://www.linkedin.com/in/jordy-van-raalte/)
 <p align="right">(<a href="#top">back to top</a>)</p>
