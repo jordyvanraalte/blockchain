@@ -4,7 +4,7 @@ from blockchain.app import run
 
 
 def main(addr, port, debug):
-    run(addr, port, debug)
+    run(addr, port, None, debug)
 
 
 if __name__ == '__main__':
