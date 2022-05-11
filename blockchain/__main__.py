@@ -1,6 +1,6 @@
 import argparse
 from blockchain.utils import crypto
-from .app import run
+from blockchain.app import run
 
 
 def main(addr, port, debug):
@@ -27,3 +27,5 @@ if __name__ == '__main__':
         print(f"New keys have been generated and saved. Public address of key pair is: {crypto.encode_addr(public)}")
     else:
         main(args.addr, args.port, args.debug)
+
+
