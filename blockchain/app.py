@@ -10,6 +10,7 @@ import jsons
 def run(addr, port, wallet, debug):
     app = App(addr, port, wallet, debug)
     app.run()
+    return app
 
 
 class App:
@@ -18,8 +19,7 @@ class App:
         self.node = BlockchainNode(addr, port, wallet, debug=debug)
         self.app.add_url_rule('/api/mine', 'api_mine', self.api_mine, methods=['GET'])
         self.app.add_url_rule('/api/chain', 'api_chain', self.api_chain, methods=['GET'])
-        self.app.add_url_rule('/api/transactions', 'api_transactions', self.api_transaction_pool,
-                              methods=['GET', 'POST'])
+        self.app.add_url_rule('/api/transactions', 'api_transactions', self.api_transaction_pool, methods=['GET', 'POST'])
         self.app.add_url_rule('/api/resolve', 'api_resolve', self.api_resolve, methods=['GET'])
 
     def run(self):
@@ -37,7 +37,10 @@ class App:
 
     def api_transaction_pool(self):
         if request.method == 'POST':
-            content = request.get_json()
+            content = request.get_json(force=True)
+            if isinstance(content, str):
+                content = jsons.loads(content)
+
             transaction = Transaction()
             transaction.inputs = content["inputs"]
             transaction.outputs = content["outputs"]
